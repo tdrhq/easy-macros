@@ -197,3 +197,16 @@
    (equal '(1 2 3)
     (collect-loop-with-index (item '(1 2 3))
       item))))
+
+
+(def-easy-macro without-body (x)
+  (+ 1 x))
+
+(test no-&fn-provided
+  (is (equal 3 (without-body (2)))))
+
+(def-easy-macro without-body-but-with-binding (&binding item x)
+  (+ 1 x))
+
+(test no-&fn-provided-but-there-is-a-binding
+  (is (equal 3 (without-body-but-with-binding (unused 2)))))

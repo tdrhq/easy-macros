@@ -145,7 +145,7 @@
                    (progn
                      (setf args (cdr args))
                      next))))
-      (values result fn))))
+      (values result (or fn (gensym "fn"))))))
 
 (defun remove-binding-syms (args)
   (loop for x in args
