@@ -203,7 +203,9 @@
   (+ 1 x))
 
 (test no-&fn-provided
-  (is (equal 3 (without-body (2)))))
+  (is (equal 3 (without-body (2))))
+  (is (equal 3 (without-body (2)
+                 (+ 4 5)))))
 
 (def-easy-macro without-body-but-with-binding (&binding item x)
   (+ 1 x))
