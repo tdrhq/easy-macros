@@ -5,7 +5,7 @@
 
 Easy-macros help you write macros of this form:
 
-```
+```lisp
   (with-<something> (...args...)
      ...body...)
 ```
@@ -21,7 +21,7 @@ Let's rewrite some well known examples to show what we mean.
 First let's see how we might write `ignore-errors` the Old-Fashioned
 way:
 
-```
+```lisp
 (defmacro custom-ignore-errors (&body body)
   `(handler-case
      (progn ,@body)
@@ -35,7 +35,7 @@ the functions that use it.
 
 You can avoid some of these issues by using the CALL-WITH pattern:
 
-```
+```lisp
 (defmacro custom-ignore-errors (&body body)
   `(call-custom-ignore-errors (lambda () ,@body)))
 
@@ -51,7 +51,7 @@ error-prone, and it's also very verbose for simple macros.
 
 Use `def-easy-macro` to essentially automate this process:
 
-```
+```lisp
 (def-easy-macro custom-ignore-errors (&fn fn)
   (handler-case
      (funcall fn)
@@ -60,7 +60,7 @@ Use `def-easy-macro` to essentially automate this process:
 
 This `custom-ignore-errors` has a slightly different API though:
 
-```
+```lisp
 (custom-ignore-errors ()
   ...body...)
 ```
@@ -76,7 +76,7 @@ Notice a few things:
 
 We don't need to use `funcall` by the way, the following is equivalent:
 
-```
+```lisp
 (def-easy-macro custom-ignore-errors (&fn fn)
   (handler-case
      (fn)
@@ -91,7 +91,7 @@ next examples.
 
 ### with-open-file
 
-```
+```lisp
 (def-easy-macro with-custom-open-file (&binding stream file &rest args &fn fn)
   (let ((stream (apply #'open file args)))
     (unwind-protect
@@ -108,7 +108,7 @@ Notice a few things:
 
 ### uiop:with-temporary-file
 
-```
+```lisp
 (def-easy-macro my-with-custom-temporary-file (&key &binding stream &binding pathname prefix suffix &fn)
    ;; ... you get the idea
     (funcall fn my-stream my-pathname))
@@ -126,7 +126,7 @@ of expressions form the lambda-list for the argument-list.
 Common Lisp comes with `dolist`, but not a `maplist`. Let's implement
 a quick `maplist` macro using `loop`:
 
-```
+```lisp
 (def-easy-macro maplist (&binding x list &fn fn)
   (loop for value in list collect (funcall fn value))
 ```
@@ -148,7 +148,7 @@ definition may not be compatible.
 We're waiting on this to be part of the next Quicklisp distribution,
 in the meantime you can use quick-patch to install:
 
-```
+```lisp
 (ql:quickload :quick-patch)
 (quick-patch:register "https://github.com/tdrhq/easy-macros.git" "main")
 (quick-patch:checkout-all ".quick-patch/")
@@ -164,7 +164,7 @@ and pull requests. There are few things that I'd personally like to see:
 
 * Less brittle lambda-list parsing: currently it's really hacky
 * A way to implement macros of the form:
-```
+```lisp
 (def-stuff my-stuff (...)
   ,@body)
 ```
