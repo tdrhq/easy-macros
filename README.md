@@ -28,7 +28,7 @@ way:
     (error () nil)))
 ```
 
-Not too bad but it's error prone. You might forget to use a `,`, you
+Not too bad, but it's error-prone. You might forget to use a `,`, you
 might forget to wrap body in `progn` etc. But worst, if you change the
 definition of `custom-ignore-errors`, you will have to recompile all
 the functions that use it.
@@ -46,8 +46,8 @@ You can avoid some of these issues by using the CALL-WITH pattern:
 ```
 
 Now most of the logic is inside a non-backticked function. But there's
-still some backquoting and macro expansion we need to do which is bug
-prone, and it's also very verbose for simple macros.
+still some backquoting and macro expansion we need to do which is
+error-prone, and it's also very verbose for simple macros.
 
 Use `def-easy-macro` to essentially automate this process:
 
