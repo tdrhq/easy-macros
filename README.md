@@ -18,6 +18,39 @@ Let's rewrite some well known examples to show what we mean.
 
 ### ignore-errors
 
+First let's see how we might write `ignore-errors` the Old-Fashioned
+way:
+
+```
+(defmacro custom-ignore-errors (&body body)
+  `(handler-case
+     (progn ,@body)
+    (error () nil)))
+```
+
+Not too bad but it's error prone. You might forget to use a `,`, you
+might forget to wrap body in `progn` etc. But worst, if you change the
+definition of `custom-ignore-errors`, you will have to recompile all
+the functions that use it.
+
+You can avoid some of these issues by using the CALL-WITH pattern:
+
+```
+(defmacro custom-ignore-errors (&body body)
+  `(call-custom-ignore-errors (lambda () ,@body)))
+
+(defun call-custom-ignore-errors (fn)
+  (handler-case
+    (funcall fn)
+   (error () nil)))
+```
+
+Now most of the logic is inside a non-backticked function. But there's
+still some backquoting and macro expansion we need to do which is bug
+prone, and it's also very verbose for simple macros.
+
+Use `def-easy-macro` to essentially automate this process:
+
 ```
 (def-easy-macro custom-ignore-errors (&fn fn)
   (handler-case
