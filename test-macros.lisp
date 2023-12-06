@@ -129,7 +129,21 @@
   (is (equal '(:foo 2)
               (get-non-bindings
                '(&binding aaa &key &binding bbb foo)
-                '(aaa :bbb bbb :foo 2)))))
+               '(aaa :bbb bbb :foo 2)))))
+
+(test get-non-bindings-for-keys-with-defaults
+  (is (equal '(:foo 2 :car 3)
+              (get-non-bindings
+               '(&binding aaa &key &binding bbb foo (car 3))
+               '(aaa :bbb bbb :foo 2 :car 3))))
+  (is (equal '(:foo 2 :car 3)
+             (get-non-bindings
+              '(&binding aaa &key &binding bbb foo (car (error "should not be called!")))
+              '(aaa :bbb bbb :foo 2 :car 3))))
+  (is (equal '(:foo 2)
+             (get-non-bindings
+              '(&binding aaa &key &binding bbb foo (car (error "should not be called!")))
+              '(aaa :bbb bbb :foo 2)))))
 
 (def-easy-macro with-bindings (&binding a &binding b &key one two
                                   &fn fn)
@@ -212,3 +226,26 @@
 
 (test no-&fn-provided-but-there-is-a-binding
   (is (equal 3 (without-body-but-with-binding (unused 2)))))
+
+(defun foobar ()
+  1)
+
+(def-easy-macro with-some-defaults (&key (val (foobar)))
+  (+ 1 val))
+
+(defun call-the-macro ()
+  (+ 3 (with-some-defaults ())))
+
+(test default-value-call-compiles ()
+  "This test would have failed at the compilation step, but we'll test
+the behavior anyway."
+  (is (eql 5 (call-the-macro))))
+
+(defun crashes ()
+  (error "should not be called"))
+
+(test build-funcall-with-defaults ()
+  (easy-macros::build-funcall 'call-with-some-defaults
+                              '(&key (val (crashes)))
+                              nil
+                              nil))

@@ -26,22 +26,30 @@
                                  else collect (gensym))) ,@body)
              ,@ (get-non-bindings real-fn-args fn-arg-values)))
 
+(defun remove-defaults (x)
+  "Remove default values from an argument to just get the name"
+  (etypecase x
+    (symbol
+     x)
+    (list
+     (car x))))
+
 (defun get-bindings (real-fn-args fn-arg-values)
   (let ((fn-args (remove-&fn real-fn-args)))
     (let ((expr `(destructuring-bind
-          ,(loop for x in fn-args
-                 if (binding-sym-p x)
-                   collect (name x)
-                 else
-                   collect x)
-          ',fn-arg-values
-        (list ,@ (let ((seen-&key nil))
-                     (loop for x in fn-args
-                           if (eql '&key x)
-                             do
-                                (setf seen-&key t)
-                           if (and (binding-sym-p x))
-                             collect
+                     ,(loop for x in fn-args
+                            if (binding-sym-p x)
+                              collect (name x)
+                            else
+                              collect (remove-defaults x))
+                     ',fn-arg-values
+                   (list ,@ (let ((seen-&key nil))
+                              (loop for x in fn-args
+                                    if (eql '&key x)
+                                      do
+                                         (setf seen-&key t)
+                                    if (and (binding-sym-p x))
+                                      collect
                              (name x)))))))
       #+nil
       (log:info "Going to eval expr: ~s" expr)
