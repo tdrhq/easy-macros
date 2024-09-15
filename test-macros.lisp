@@ -249,3 +249,25 @@ the behavior anyway."
                               '(&key (val (crashes)))
                               nil
                               nil))
+
+(defun find-defun (exprs)
+  (loop for expr in exprs
+        if (and
+            (listp expr)
+            (eql 'cl:defun (car expr)))
+          return expr))
+
+(test macroexpands-definition
+  (let ((defun (find-defun
+                (macroexpand-1 `(def-easy-macro foo ()
+                                  (declare (optimize speed)))))))
+    (is (equal '(declare (optimize speed))
+               (fourth defun)))))
+
+(test macroexpands-definition-with-doc
+  (let ((defun (find-defun
+                (macroexpand-1 `(def-easy-macro foo ()
+                                  "foo"
+                                  (declare (optimize speed)))))))
+    (is (equal '(declare (optimize speed))
+               (fourth defun)))))

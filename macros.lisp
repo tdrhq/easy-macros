@@ -166,11 +166,15 @@
 (defmacro def-easy-macro (name real-fn-args  &body body)
   (let ((fn-name (intern (format nil "CALL-~a" (string name)) *package*)))
     (multiple-value-bind (fn-args body-fn) (remove-&fn real-fn-args)
-     `(progn
-        (defun ,fn-name (,body-fn ,@ (remove-binding-syms fn-args))
-          (flet ((,body-fn (&rest args)
-                   (declare (inline))
-                   (apply ,body-fn args)))
-            ,@body))
-        (defmacro ,name ((&rest fn-arg-values) &body macro-body)
-          (build-funcall ',fn-name ',real-fn-args fn-arg-values macro-body))))))
+      (multiple-value-bind (body decl doc)
+          (uiop:parse-body body :documentation t)
+       `(progn
+          (defun ,fn-name (,body-fn ,@ (remove-binding-syms fn-args))
+            ,@decl
+            (flet ((,body-fn (&rest args)
+                     (declare (inline))
+                     (apply ,body-fn args)))
+              ,@body))
+          (defmacro ,name ((&rest fn-arg-values) &body macro-body)
+            ,doc
+            (build-funcall ',fn-name ',real-fn-args fn-arg-values macro-body)))))))
